@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 #Tkinter
-#DATABASE
+#DATABASE Creation
 conn=sq.connect('Study.db')
 cur=conn.cursor()
 cur.execute("""  CREATE TABLE IF NOT EXISTS Student(
@@ -18,11 +18,13 @@ cur.execute("""  CREATE TABLE IF NOT EXISTS Student(
                 )""")
 cur.close()
 conn.commit()
+
 #Window's ceation
 window = Tk()
 window.title("Gestion Des Notes!")
+
 #functions
-ide=0
+#Adding function
 def Ajout():
     conn=sq.connect('Study.db')
     cur=conn.cursor()
@@ -41,8 +43,9 @@ def Ajout():
                 })
     cur.close()
     conn.commit()
-    messagebox.showinfo('Nouvel ajout', 'Ajout avec succes!')
+    messagebox.showinfo('Nouvel ajout', 'Ajout avec succès!')
     
+# Showing notes function    
 def Liste():
     liste = Toplevel()
     liste.geometry('640x680')
@@ -74,7 +77,8 @@ def Liste():
     cur.close()
     conn.commit()
 
-
+#Modification's  function
+#We had the same work of the original window
 def ModifyOut():
     def ModifyIn():
         idd = int(entry0.get())
@@ -101,30 +105,29 @@ def ModifyOut():
                  {'nom':Nom,'id':idd, 'note':Notep,'Redoublant':Redoubl, 'Appreciation':txt})
             conn.commit()
             conn.close()
-            messagebox.showinfo('Modification', 'Modification avec succes!')
+            messagebox.showinfo('Modification', 'Modification avec succès!')
         else:
             messagebox.showinfo('Modification', 'Modification échoué..RéssayerSVP!')
-
 
     mod = Toplevel()
     mod.geometry('480x640+400+40')
     mod.title("Note's Modification")
     lb0= Label(mod,text="Identity:")
     lb0.grid(row=0,column=0,padx=10, pady=15)
+    entry0=Entry(mod,width=40)
+    entry0.grid(row=0,column=1,padx=10, pady=10,columnspan=2)
     lb1 = Label(mod,text="Nom et Prénom :")
     lb1.grid(row=1,column=0,padx=10, pady=15)
+    entry1=Entry(mod,width=40)
+    entry1.grid(row=1,column=1,padx=10, pady=10,columnspan=2)
     lb2 = Label(mod,text="Note :")
     lb2.grid(row=3,column=0,padx=10, pady=15)
+    entry2=Entry(mod,width=40)
+    entry2.grid(row=3,column=1,padx=10, pady=10,columnspan=2)
     lb3 = Label(mod,text="Redoublant :")
     lb3.grid(row=4,column=0,padx=10, pady=15)
     lb4 = Label(mod,text="Appreciation :")
     lb4.grid(row=5,column=0,padx=10, pady=15)
-    entry0=Entry(mod,width=40)
-    entry0.grid(row=0,column=1,padx=10, pady=10,columnspan=2)
-    entry1=Entry(mod,width=40)
-    entry1.grid(row=1,column=1,padx=10, pady=10,columnspan=2)
-    entry2=Entry(mod,width=40)
-    entry2.grid(row=3,column=1,padx=10, pady=10,columnspan=2)
     texte = Text(mod,height=20,width=40)
     texte.grid(row=5,column=1,columnspan=2,padx=10, pady=10)
     selected = IntVar()
@@ -137,8 +140,8 @@ def ModifyOut():
     mod.columnconfigure(0, weight=20)
     mod.columnconfigure(1, weight=1)
     mod.columnconfigure(2, weight=1)
-    print('modified')
 
+#Delete's function
 def DeleteOut():
     def DeleteIn():
         conn=sq.connect('Study.db')
@@ -159,13 +162,11 @@ def DeleteOut():
             conn=sq.connect('Study.db')
             cur=conn.cursor()
             cur.execute("DELETE from Student WHERE ID=:ident",
-                                {'ident':idd})
+                            {'ident':idd})
             conn.commit()
-            messagebox.showinfo('Suppression', 'Eleve supprimé avec succès')
- 
+            messagebox.showinfo('Suppression', 'Elève supprimé(e) avec succès!')
         else:
-            messagebox.showinfo('Suppression', 'Suppression échoué..RéssayerSVP!')
-
+            messagebox.showinfo('Suppression', 'Suppression échoué..Réssayer SVP!')
     dell= Toplevel()
     dell.geometry('460x100+700+100')
     dell.title("Student's Suppression")
@@ -179,10 +180,11 @@ def DeleteOut():
     dell.columnconfigure(1, weight=1)
     dell.columnconfigure(2, weight=1)
     
-def Statistics():
+#Graph's function    
+def Graphes():
     root=Tk()
-    root.title('Graphes')
-    
+    root.title("Student's Graphs")
+    B=Label(root, anchor=CENTER, font=("Verdana",16), text='Graphical Results', bg='black', fg='white').pack()
     Names=[]
     Notes=[]
     conn=sq.connect('Study.db')
@@ -195,7 +197,10 @@ def Statistics():
     Fig1=plt.Figure(dpi=100)
     Subplot1=Fig1.add_subplot(111)
     xAxis=Names
+    Subplot1.set_xlabel('Names')
     yAxis=Notes
+    Subplot1.set_ylabel('Notes')
+    Subplot1.set_title("Student's Names and Notes")
     Subplot1.bar(xAxis, yAxis, color='green')  
     BAR=FigureCanvasTkAgg(Fig1, root)
     BAR.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=0)
@@ -210,6 +215,7 @@ def Statistics():
     PieSize=Size
     Colors=['grey','silver']
     Explode = (0, 0.1)
+    Subplot2.set_title("Succeded and Failed Students Poucentage")
     Subplot2.pie(PieSize, colors=Colors, explode=Explode, labels=LabelsPie,autopct='%1.1f%%',shadow=True, startangle=90)
     Subplot2.axis('equal')
     PIE=FigureCanvasTkAgg(Fig2, root)
@@ -245,15 +251,17 @@ btn1 = Button(window, text="Listes Des Notes", command=Liste)
 btn1.grid(column=1, row=4)
 btn2 = Button(window, text="Ajouter", command=Ajout)
 btn2.grid(column=2, row=4)
+#Choix des services
 menu = Menu(window)
 new_item = Menu(menu)
 new_item.add_command(label='Modifier_Note', command=ModifyOut)
 new_item.add_separator()
 new_item.add_command(label='Supprimer_eleve', command=DeleteOut)
 new_item.add_separator()
-new_item.add_command(label='Statistique', command=Statistics)
+new_item.add_command(label='Statistique_élève', command=Graphes)
 menu.add_cascade(label='Choices', menu=new_item)
 window.config(menu=menu)
+#Configuration_colonnes
 window.columnconfigure(0, weight=2)
 window.columnconfigure(1, weight=1)
 window.columnconfigure(2, weight=2)
