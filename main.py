@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-
-# -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
+import tkinter as tk
 from tkinter import *
 import sqlite3 as sq
+from pandas import DataFrame
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 #Tkinter
 #DATABASE
 conn=sq.connect('Study.db')
@@ -62,8 +63,8 @@ def Liste():
     b3.grid(row=0, column=3,padx=10, pady=10)
     b4 = Label(liste, text="Appreciation")
     b4.grid(row=0, column=4,padx=10, pady=10)
-    for i in range(1,height): #Rows
-        for j in range(width): #Columns
+    for i in range(1,height): 
+        for j in range(width): 
             b = Label(liste, text=list[i-1][j])
             b.grid(row=i, column=j,padx=10, pady=10)
     liste.columnconfigure(0, weight=1)
@@ -77,8 +78,10 @@ def Liste():
 
 def ModifyOut():
     def ModifyIn():
-        txt=txt3.get("1.0", 'end-1c')
-        global selected
+        idd = int(entry0.get())
+        Nom = entry1.get()
+        Notep=int(entry2.get())
+        txt=texte.get("1.0", 'end-1c')
         if selected.get()==1:
             Redoubl="Oui"
         elif selected.get()==0:
@@ -89,14 +92,14 @@ def ModifyOut():
             cur.execute("SELECT * FROM Student")
             list=cur.fetchall()
         for i in range(len(list)):
-            if list[i][1]==NomPrenom.get():
+            if list[i][0]==idd:
                 x=1
         if x==1:
             conn=sq.connect('Study.db')
             cur=conn.cursor()
             cur.execute("""UPDATE Student SET Note = :note ,Redoublant = :Redoublant,Appreciation= :Appreciation
-                    WHERE NP = :nom """,
-                 {'nom':NomPrenom.get(),'note':int(Notes.get()),'Redoublant':Redoubl, 'Appreciation':txt})
+                    WHERE NP = :nom And ID = :id""",
+                 {'nom':Nom,'id':idd, 'note':Notep,'Redoublant':Redoubl, 'Appreciation':txt})
             conn.commit()
             conn.close()
             messagebox.showinfo('Modification', 'Modification avec succes!')
@@ -106,28 +109,32 @@ def ModifyOut():
 
     mod = Toplevel()
     mod.geometry('480x640+400+40')
-    mod.title("modification")
+    mod.title("Note's Modification")
+    lb0= Label(mod,text="Identity:")
+    lb0.grid(row=0,column=0,padx=10, pady=15)
     lb1 = Label(mod,text="Nom et Prénom :")
-    lb1.grid(row=0,column=0,padx=10, pady=15)
+    lb1.grid(row=1,column=0,padx=10, pady=15)
     lb2 = Label(mod,text="Note :")
-    lb2.grid(row=2,column=0,padx=10, pady=15)
+    lb2.grid(row=3,column=0,padx=10, pady=15)
     lb3 = Label(mod,text="Redoublant :")
-    lb3.grid(row=3,column=0,padx=10, pady=15)
+    lb3.grid(row=4,column=0,padx=10, pady=15)
     lb4 = Label(mod,text="Appreciation :")
-    lb4.grid(row=4,column=0,padx=10, pady=15)
+    lb4.grid(row=5,column=0,padx=10, pady=15)
+    entry0=Entry(mod,width=40)
+    entry0.grid(row=0,column=1,padx=10, pady=10,columnspan=2)
     entry1=Entry(mod,width=40)
-    entry1.grid(row=0,column=1,padx=10, pady=10,columnspan=2)
+    entry1.grid(row=1,column=1,padx=10, pady=10,columnspan=2)
     entry2=Entry(mod,width=40)
-    entry2.grid(row=2,column=1,padx=10, pady=10,columnspan=2)
+    entry2.grid(row=3,column=1,padx=10, pady=10,columnspan=2)
     texte = Text(mod,height=20,width=40)
-    texte.grid(row=4,column=1,columnspan=2,padx=10, pady=10)
+    texte.grid(row=5,column=1,columnspan=2,padx=10, pady=10)
     selected = IntVar()
     a = Radiobutton(mod,text="Oui",value=1,variable=selected)
-    a.grid(row=3,column=1)
+    a.grid(row=4,column=1)
     b = Radiobutton(mod,text="Non",value=0,variable=selected)
-    b.grid(row=3,column=2)
-    apply=Button(mod, text="Modify", command=lambda : [ModifyIn(),mod.destroy()])
-    apply.grid(row=6,column=1,padx=10, pady=10)
+    b.grid(row=4,column=2)
+    apply=Button(mod, text="MODIFY", command=lambda : [ModifyIn(),mod.destroy()])
+    apply.grid(row=7,column=1,padx=10, pady=10)
     mod.columnconfigure(0, weight=20)
     mod.columnconfigure(1, weight=1)
     mod.columnconfigure(2, weight=1)
@@ -140,20 +147,20 @@ def DeleteOut():
         cur.execute("SELECT * FROM Student")
         conn.commit()
         list=cur.fetchall()
-        name = entr.get()
-        a=0
+        idd = int(entr.get())
+        x=0
         for i in range(len(list)):
-            if list[i][1]==name:
-                a=1
-        if a==1:
+            if list[i][0]==idd:
+                x=1
+        if x==1:
             NomPrenom=list[i][1]
             Notes=list[i][2]
             list[i][3]
             list[i][4]
             conn=sq.connect('Study.db')
             cur=conn.cursor()
-            cur.execute("DELETE from Student WHERE NP = :nom ",
-                                {'nom': NomPrenom})
+            cur.execute("DELETE from Student WHERE ID=:ident",
+                                {'ident':idd})
             conn.commit()
             messagebox.showinfo('Suppression', 'Eleve supprimé avec succès')
  
@@ -162,43 +169,53 @@ def DeleteOut():
 
     dell= Toplevel()
     dell.geometry('460x100+700+100')
-    lb1 = Label(dell,text="Nom et Prénom :")
+    dell.title("Student's Suppression")
+    lb1 = Label(dell,text="Identity:")
     lb1.grid(row=0,column=0,padx=10, pady=15)
     entr = Entry(dell,width=40)
     entr.grid(row=0,column=1,padx=10, pady=10,columnspan=2)
-    b=Button(dell, text="Supprimer", command=lambda : [DeleteIn(), dell.destroy()])
+    b=Button(dell, text="DELETE", command=lambda : [DeleteIn(), dell.destroy()])
     b.grid(row=3,column=1,padx=10, pady=10)
     dell.columnconfigure(0, weight=1)
     dell.columnconfigure(1, weight=1)
     dell.columnconfigure(2, weight=1)
-    print('deleted')
     
-def Stat():
-    names=[]
-    notes=[]
+def Statistics():
+    root=Tk()
+    root.title('Graphes')
+    
+    Names=[]
+    Notes=[]
     conn=sq.connect('Study.db')
     cur=conn.cursor()
     cur.execute("SELECT * FROM Student")
-    l=cur.fetchall()
-    for i in range(len(l)):
-        names.append(l[i][1])
-        notes.append(l[i][2])
-    labels = 'reussi','non reussi'
-    a=0
-    for i in notes:
+    list=cur.fetchall()
+    for i in range(len(list)):
+        Names.append(list[i][1])
+        Notes.append(list[i][2])
+    Fig1=plt.Figure(dpi=100)
+    Subplot1=Fig1.add_subplot(111)
+    xAxis=Names
+    yAxis=Notes
+    Subplot1.bar(xAxis, yAxis)  
+    BAR=FigureCanvasTkAgg(Fig1, root)
+    BAR.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=0)
+    x=0
+    for i in Notes:
         if i<11:
-            a+=100/len(notes)
-    sizes = [100-a,a]
-    plt.figure()
-    plt.subplot()
-    plt.bar(names, notes)
-    explode = (0, 0.1)  # only "explode" the 2nd slice (i.e. 'Hogs')
-    fig1, ax1 = plt.subplots()
-    ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',shadow=True, startangle=90)
-    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-    plt.suptitle('Les statistiques des notes')
-    plt.show()
-    return('Stats')
+            x+=100/len(Notes)
+    Size = [100-x,x]
+    Fig2=plt.Figure(dpi=100)
+    Subplot2=Fig2.add_subplot(111)
+    LabelsPie='Succeded','Failed'
+    PieSize=Size
+    Colors=['lightblue','silver']
+    Explode = (0, 0.1)
+    Subplot2.pie(PieSize, colors=Colors, explode=Explode, labels=LabelsPie,autopct='%1.1f%%',shadow=True, startangle=90)
+    Subplot2.axis('equal')
+    PIE=FigureCanvasTkAgg(Fig2, root)
+    PIE.get_tk_widget().pack() 
+    root.mainloop()
         
     
 #Variabels
@@ -235,7 +252,7 @@ new_item.add_command(label='Modifier_Note', command=ModifyOut)
 new_item.add_separator()
 new_item.add_command(label='Supprimer_eleve', command=DeleteOut)
 new_item.add_separator()
-new_item.add_command(label='Statistique', command=Stat)
+new_item.add_command(label='Statistique', command=Statistics)
 menu.add_cascade(label='Choices', menu=new_item)
 window.config(menu=menu)
 window.columnconfigure(0, weight=2)
