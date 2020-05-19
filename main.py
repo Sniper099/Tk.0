@@ -2,7 +2,6 @@
 import tkinter as tk
 from tkinter import *
 import sqlite3 as sq
-from pandas import DataFrame
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -86,11 +85,11 @@ def ModifyOut():
             Redoubl="Oui"
         elif selected.get()==0:
             Redoubl="Non"
-            x=0
-            conn=sq.connect('Study.db')
-            cur=conn.cursor()
-            cur.execute("SELECT * FROM Student")
-            list=cur.fetchall()
+        x=0
+        conn=sq.connect('Study.db')
+        cur=conn.cursor()
+        cur.execute("SELECT * FROM Student")
+        list=cur.fetchall()
         for i in range(len(list)):
             if list[i][0]==idd:
                 x=1
@@ -197,7 +196,7 @@ def Statistics():
     Subplot1=Fig1.add_subplot(111)
     xAxis=Names
     yAxis=Notes
-    Subplot1.bar(xAxis, yAxis)  
+    Subplot1.bar(xAxis, yAxis, color='green')  
     BAR=FigureCanvasTkAgg(Fig1, root)
     BAR.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=0)
     x=0
@@ -209,7 +208,7 @@ def Statistics():
     Subplot2=Fig2.add_subplot(111)
     LabelsPie='Succeded','Failed'
     PieSize=Size
-    Colors=['lightblue','silver']
+    Colors=['grey','silver']
     Explode = (0, 0.1)
     Subplot2.pie(PieSize, colors=Colors, explode=Explode, labels=LabelsPie,autopct='%1.1f%%',shadow=True, startangle=90)
     Subplot2.axis('equal')
