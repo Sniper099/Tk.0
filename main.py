@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from tkinter import messagebox
 import tkinter as tk
 from tkinter import *
 import sqlite3 as sq
@@ -258,7 +259,7 @@ new_item.add_command(label='Modifier_Note', command=ModifyOut)
 new_item.add_separator()
 new_item.add_command(label='Supprimer_eleve', command=DeleteOut)
 new_item.add_separator()
-new_item.add_command(label='Statistique_élève', command=Graphes)
+new_item.add_command(label='Statistique_eleve', command=Graphes)
 menu.add_cascade(label='Choices', menu=new_item)
 window.config(menu=menu)
 #Configuration_colonnes
